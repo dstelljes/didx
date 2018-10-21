@@ -1,9 +1,7 @@
 'use strict'
 
-const fs = require('fs')
-const path = require('path')
-
 const { TYPE_DIRECTORY, TYPE_FILE } = require('./constants')
+const { getPath, readDirectory } = require('./fs')
 
 /**
  * Generates a list of results to operate on.
@@ -11,40 +9,35 @@ const { TYPE_DIRECTORY, TYPE_FILE } = require('./constants')
  * @param {string} directory
  * The absolute path of the directory to search.
  *
- * @returns Promise<ReadResult[]>
+ * @returns {Promise<RawItem[]>}
  */
-module.exports = function read (directory) {
-  return new Promise((resolve, reject) => {
-    fs.readdir(directory, { withFileTypes: true }, (error, entries) => {
-      if (error) {
-        reject(error)
-      } else {
-        const items = []
+async function read (directory) {
+  const items = []
 
-        for (const entry of entries) {
-          const item = {}
+  for (const entry of await readDirectory(directory)) {
+    const item = {
+      path: getPath(directory, entry.name)
+    }
 
-          if (entry.isDirectory()) {
-            item.type = TYPE_DIRECTORY
-          } else if (entry.isFile()) {
-            item.type = TYPE_FILE
-          } else {
-            continue
-          }
+    if (entry.isDirectory()) {
+      item.type = TYPE_DIRECTORY
+    } else if (entry.isFile()) {
+      item.type = TYPE_FILE
+    } else {
+      continue
+    }
 
-          item.path = path.resolve(directory, entry.name)
-          items.push(item)
-        }
+    items.push(item)
+  }
 
-        resolve(items)
-      }
-    })
-  })
+  return items
 }
+
+module.exports = read
 
 /**
  * A file or directory.
- * @typedef {Object} Item
+ * @typedef {Object} RawItem
  *
  * @property {string} path
  * The item’s absolute path.
