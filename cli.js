@@ -1,15 +1,22 @@
 'use strict'
 
 const cli = require('commander')
-const { resolve } = require('path')
+const path = require('path')
+
+const read = require('./reader')
+
 const { version } = require('./package.json')
 
 const program = cli
   .version(version)
-  .arguments('<directory>')
-  .action(directory => {
-    console.log(resolve(directory))
-  })
+  .arguments('[directory]')
+  .action(directory => read(path.resolve(directory || '.'))
+    .then(items => console.log(items))
+    .catch(error => {
+      console.error(`Failed to generate the listing: ${error.message}`)
+      process.exitCode = 1
+    })
+  )
 
 /**
  * Parses arguments and runs the program.
