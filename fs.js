@@ -93,6 +93,8 @@ function readDirectory (directory) {
  *
  * @param {string} file
  * The path of a file.
+ *
+ * @returns {Promise<Buffer>}
  */
 function readFile (file, bytes = Infinity) {
   return new Promise((resolve, reject) => {
@@ -109,13 +111,37 @@ function readFile (file, bytes = Infinity) {
   })
 }
 
+/**
+ * Writes data to a file.
+ *
+ * @param {string} file
+ * The path to write to.
+ *
+ * @param {Buffer} data
+ * The file data.
+ *
+ * @returns {Promise}
+ */
+function writeFile (file, data) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(file, data, error => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
 module.exports = {
   getFormat,
   getName,
   getPath,
   getStats,
   readDirectory,
-  readFile
+  readFile,
+  writeFile
 }
 
 /**

@@ -5,6 +5,15 @@ const ejs = require('ejs')
 const { readFile } = require('./fs')
 const templates = require('./templates')
 
+/**
+ * Generates a render function for a template.
+ *
+ * @param {string} template
+ * The path to a template.
+ *
+ * @returns {Function}
+ * A function that accepts a context object and returns the rendered output.
+ */
 async function render (template) {
   const path = templates.get(template) || template
   template = await readFile(path)

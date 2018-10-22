@@ -5,6 +5,30 @@ const cli = require('commander')
 const metadata = require('./package.json')
 const pipeline = require('./pipeline')
 
+const program = cli
+  .version(metadata.version)
+  .arguments('[directory]')
+  .option(
+    '-n, --name [name]',
+    'The name of the output file.',
+    'index.html'
+  )
+  .option(
+    '-r, --recurse',
+    'If set, will also generate index files for each subdirectory.'
+  )
+  .option(
+    '-t, --template [template]',
+    'The name of a built-in template or the path to a template file.',
+    'apache'
+  )
+  .action(async (directory = '.', options) => pipeline(directory, options)
+    .catch(error => {
+      console.error(`Failed to generate the listing: ${error.message}`)
+      process.exitCode = 1
+    })
+  )
+
 /**
  * Parses arguments and runs the program.
  *
@@ -12,21 +36,7 @@ const pipeline = require('./pipeline')
  * Command-line arguments.
  */
 function run (argv) {
-  cli
-    .version(metadata.version)
-    .arguments('[directory]')
-    .option(
-      't, --template [template]',
-      'The name of a built-in template or the path to a template file.',
-      'apache'
-    )
-    .action(async (directory = '.', options) => pipeline(directory, options)
-      .catch(error => {
-        console.error(`Failed to generate the listing: ${error.message}`)
-        process.exitCode = 1
-      })
-    )
-    .parse(argv)
+  program.parse(argv)
 }
 
 module.exports = run
