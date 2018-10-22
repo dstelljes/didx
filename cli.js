@@ -15,8 +15,12 @@ function run (argv) {
   cli
     .version(metadata.version)
     .arguments('[directory]')
-    .action((directory = '.') => pipeline(directory)
-      .then(context => console.log(context))
+    .option(
+      't, --template [template]',
+      'The name of a built-in template or the path to a template file.',
+      'apache'
+    )
+    .action(async (directory = '.', options) => pipeline(directory, options)
       .catch(error => {
         console.error(`Failed to generate the listing: ${error.message}`)
         process.exitCode = 1

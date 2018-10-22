@@ -3,7 +3,6 @@
 const fs = require('fs')
 const identify = require('file-type')
 const path = require('path')
-const read = require('read-chunk')
 
 const classes = require('./classes')
 const { CLASS_UNKNOWN } = require('./constants')
@@ -17,7 +16,7 @@ const { CLASS_UNKNOWN } = require('./constants')
  * @returns {Promise<FileFormat>}
  */
 async function getFormat (file) {
-  const guess = identify(await read(file, 0, 4100)) || {}
+  const guess = identify(await readFile(file, 4100)) || {}
 
   return {
     class: classes.get(guess.ext) || CLASS_UNKNOWN,
@@ -89,12 +88,34 @@ function readDirectory (directory) {
   })
 }
 
+/**
+ * Gets file contents.
+ *
+ * @param {string} file
+ * The path of a file.
+ */
+function readFile (file, bytes = Infinity) {
+  return new Promise((resolve, reject) => {
+    const chunks = []
+
+    const stream = fs.createReadStream(file, {
+      end: bytes,
+      flags: 'r'
+    })
+
+    stream.on('data', chunk => chunks.push(chunk))
+    stream.on('end', () => resolve(Buffer.concat(chunks)))
+    stream.on('error', error => reject(error))
+  })
+}
+
 module.exports = {
   getFormat,
   getName,
   getPath,
   getStats,
-  readDirectory
+  readDirectory,
+  readFile
 }
 
 /**
