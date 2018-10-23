@@ -11,8 +11,10 @@ const build = require('./renderer')
  *
  * @param {string} directory
  * The path to a directory.
+ *
+ * @returns {Context}
  */
-async function gather (directory) {
+async function gather (directory, parents) {
   return {
     items: (await Promise.all((await read(directory)).map(process)))
       .sort((a, b) => a.name.localeCompare(b.name)),
@@ -41,8 +43,8 @@ async function pipeline (directory, options) {
 
   const render = await build(template)
 
-  const write = async directory => {
-    const context = await gather(directory)
+  const write = async (directory, parents = []) => {
+    const context = { ...await gather(directory), parents }
     const result = render(context)
 
     await writeFile(getPath(directory, name), result)
@@ -50,7 +52,7 @@ async function pipeline (directory, options) {
     if (recurse) {
       await Promise.all(context.items
         .filter(item => item.type === TYPE_DIRECTORY)
-        .map(item => write(item.path))
+        .map(item => write(item.path, [...parents, context]))
       )
     }
   }
@@ -59,6 +61,16 @@ async function pipeline (directory, options) {
 }
 
 module.exports = pipeline
+
+/**
+ * An object passed to a render function.
+ * @typedef {Object} Context
+ *
+ * @property {ProcessedItem[]} items
+ * @property {string} name
+ * @property {string} path
+ * @property {Date} timestamp
+ */
 
 /**
  * Command line options.
