@@ -16,8 +16,7 @@ const build = require('./renderer')
  */
 async function gather (directory, parents) {
   return {
-    items: (await Promise.all((await read(directory)).map(process)))
-      .sort((a, b) => a.name.localeCompare(b.name)),
+    items: (await Promise.all((await read(directory)).map(process))).sort(sort),
     name: getName(directory),
     path: directory,
     timestamp: new Date()
@@ -58,6 +57,16 @@ async function pipeline (directory, options) {
   }
 
   write(directory)
+}
+
+/**
+ * Orders files alphabetically, directories first.
+ *
+ * @param {ProcessedItem} a
+ * @param {ProcessedItem} b
+ */
+function sort (a, b) {
+  return a.type.localeCompare(b.type) || a.name.localeCompare(b.name)
 }
 
 module.exports = pipeline
