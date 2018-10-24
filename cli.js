@@ -20,7 +20,7 @@ const program = cli
   .option(
     '-t, --template [template]',
     'The name of a built-in template or the path to a template file.',
-    'apache'
+    'default'
   )
   .action(async (directory = '.', options) => pipeline(directory, options)
     .catch(error => {
